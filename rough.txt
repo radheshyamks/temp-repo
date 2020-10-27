@@ -1,0 +1,218 @@
+git help git
+
+git help tutorial
+
+git help everyday
+
+cat /etc/gitconfig
+
+rm ~/.gitconfig
+
+git config --system /* for system config */
+
+git config --global /* for a project */
+
+git config --local /* for specific project */
+
+/* you can set your user name and email id */
+
+git config --global user.name "your name"
+
+git config --global user.email "your email"
+
+git config --list /* to check the list of users */
+
+or
+/* */
+cat ~/.gitconfig
+
+/* to set the color */
+git config --global color.ui true
+
+/*you can set your default editor */
+git config --global core.editor "vim"
+
+/*you can see the details of users setting */
+
+git config --global --list
+
+git config --global user.name
+
+/* there are three stages in git */
+
+Working directory ---------> staging area ---------> repository
+
+
+steps to push your file in repository or remote directory
+
+git log
+
+git status
+
+git add filename
+
+git commit
+
+git help log
+
+git log --oneline
+
+/* To see particular author log*/
+git log --author="Author name"
+
+/* To delete a file in git */
+/*	First check the log
+  	are you on the top of the log tree or not
+	if you are not at the top of the tree
+	then do checkout  and see the log
+	if you are on the top of the log then do all this process
+*/
+git rm -rf file_name
+git add file_name
+git commit
+
+or
+/*first check the log 
+  if you are on the top of tree then do all the process*/
+rm filename
+git add filename
+git commit
+git push
+
+/*For renaming a file
+ first check the log
+ if you are on the top  of log tree
+ then do it
+*/
+mv filename Newname
+git add Newname
+git commit
+git push
+
+or
+git mv filename newname
+git add newname
+git commit
+git push
+
+/*If you want to ignore any file*/
+vi .gitignore
+/*In this file you can write any file name and it will be ignored by git*/
+git add .gitignore
+git commit
+git push
+
+/*To check the difference between staged file and working directory file*/
+git diff HEAD filename
+
+git diff --staged filename
+
+/* To bring your original file fromn staged area*/
+git checkout -- filename
+
+/* -- is for file not for branch*/
+
+
+move to an old commit
+
+/*
+We can move the head pointer to some previous commit and start recording the commits from
+that commit objects onwards. There are three ways to doing this
+*/
+Soft Reset: git reset --soft ID
+/*
+Head is moved to the specified commit <ID>
+No changes are made in the staging index or working directory
+*/
+
+Mixed Reset: git reset --mixed <ID>
+/*
+Head is moved to the specified commit ID
+Staging index is also changed to match the local repository
+No changes are made in the working directory
+*/
+
+Hard Reset: git reset --hard <ID>
+/*
+Head is moved to the specified commit <ID>
+Staging index and working directory both match the local repository
+*/
+
+git reset hard <commit id>
+/* if you want to fall back to the previous log*/
+git reset --hard <commit id>
+
+/*How to create new branch*/
+git branch new-branch_name
+/*To move to new branch*/
+git checkout New_branch_name
+
+/* to move to master*/
+git checkout master
+
+/*To merge with master branch*/
+
+/* to check which branch you are working in*/
+git branch
+
+
+/*There are two type of merge
+1. Fastforward merge
+2. Real merge
+*/
+/*your current branch must be receive branch*/
+
+Real merge: 
+git checkout master(receive_branch_name)
+git merge --no-ff merge_branch_name
+
+
+/*your current branch must be recieve branch*/
+Fastforward merge:
+git checkout receive_branch_name
+git merge merge_branch_name
+
+/*How to handle merge conflicts*/
+
+/*You can abort the merging*/
+git merge --abort
+
+/* Another method to resolve conflict*/
+/*Take your conflict file in your working directory*/
+vi file_name
+/*remove the conflict*/
+git add file_name
+git commit
+git push
+
+/* you can use ool to resolve it 
+kdiff3 xxdiff diffmerge araxis this tools are use to relosve conflicts
+*/
+git mergetool --tool=diffuse
+
+
+/*Hosting services for versioning systems*/
+
+https://bitbucket.org
+https://github.com
+https://gitlab.com
+
+/*You can create your account on any of them
+then you can create connection*/
+
+git remote add origin pathtoyouraccount
+/*either your github or bitbucket*/
+
+/*To detach the remote connection with origin*/
+git remote rm origin
+
+/*To check the connection*/
+git remote -v
+
+
+git push origin master
+
+
+/**/
+git clone <URL>
+git pull origin master
