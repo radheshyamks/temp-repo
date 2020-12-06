@@ -10,6 +10,8 @@ int main(int argc, char* argv[], char** env)
 	printf("\nenvironment\n");
 	for(int i=0; environ[i] != NULL; i++){
 		printf("%s ", environ[i]);
+	for(int i=0; env[i] != NULL; i++){
+		printf("%s ", env[i]);
 	}
 	return 0;
 }
