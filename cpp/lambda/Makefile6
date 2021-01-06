@@ -1,0 +1,23 @@
+#make --file Makefile6 clean
+#make --file Makefile6 run
+#make --file Makefile6 all
+#make --file=Makefile6 run
+#make --file=Makefile6 clean
+#make --file=Makefile6 all
+CC= g++ -c
+OBJ= lambda06.o
+all: target
+target: $(OBJ)
+	g++ -o $@ $^
+$(OBJ): lambda06.cpp
+	$(CC) $^
+.PHONY: clean run help
+clean:
+	@echo "cleaning all obj and target files..."
+	@rm -rf *.o target
+run:
+	@./target
+help:
+	@echo "clean: for delete the object and exe files.."
+	@echo "run: for run the application"
+	@echo "all: will generate exe file"
