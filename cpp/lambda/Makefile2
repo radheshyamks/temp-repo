@@ -1,0 +1,23 @@
+#make --file Makefile2 clean
+#make --file Makefile2 run
+#make --file Makefile2 all
+#make --file=Makefile2 run
+#make --file=Makefile2 clean
+#make --file=Makefile2 all
+CC= g++ -c
+OBJ= lambda02.o
+all: target
+target: $(OBJ)
+	g++ -o $@ $^
+$(OBJ): lambda02.cpp
+	$(CC) $^
+.PHONY: clean run help
+clean:
+	@echo "cleaning all obj and target files..."
+	@rm -rf *.o target
+run:
+	@./target
+help:
+	@echo "clean: for delete the object and exe files.."
+	@echo "run: for run the application"
+	@echo "all: will generate exe file"
