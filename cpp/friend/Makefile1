@@ -1,0 +1,24 @@
+#make --file Makefile1 all
+#make --file Makefile1 run
+#make --file Makefile1 clean
+#make --file=Makefile1 all
+#make --file=Makefile1 run
+#make --file=Makefile1 clean
+CC= g++ -c
+OBJ= friend01.o
+FILE= friend01.cpp
+all: target
+target: $(OBJ)
+	g++ -o $@ $^
+$(OBJ): $(FILE)
+	$(CC) $^
+.PHONY: clean run help
+clean:
+	@echo "Cleaning object and target files..."
+	@rm -rf *.o target
+run:
+	@./target
+help:
+	@echo "all: to create executable file"
+	@echo "clean: to delete obj and target files"
+	@echo "run: to run the application"
