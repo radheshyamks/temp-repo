@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.12)
+project(main VERSION 1.10)
+configure_file(main.hh.in main.hh)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${PROJECT_BINARY_DIR})
+add_executable(main main.cpp)
