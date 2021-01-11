@@ -1,0 +1,14 @@
+CC= g++ -c
+OBJ= friend04.o
+FILE= friend04.cpp
+all: target
+target: $(OBJ)
+	g++ -o $@ $^
+$(OBJ): $(FILE)
+	$(CC) $^
+.PHONY: clean run
+clean:
+	@echo "cleaning obj and target files..."
+	@rm -rf *.o target
+run:
+	@./target
