@@ -1,0 +1,5 @@
+there are four type of typecast in C++
+1. const_cast<T*>(ptr)
+2. static_cast<T>(var)
+3. dynamic_cast<T>(var)
+4. reinterpret_cast<T*>(ptr)
