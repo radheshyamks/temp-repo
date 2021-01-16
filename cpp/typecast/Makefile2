@@ -1,0 +1,14 @@
+CC= g++ -c
+OBJ= const_cast.o
+FILE= const_cast.cpp
+all: target
+target: $(OBJ)
+	g++ -o $@ $^
+$(OBJ): $(FILE)
+	$(CC) $^
+.PHONY: clean run
+clean:
+	@echo "cleaning obj and target files..."
+	@rm -rf *.o target
+run:
+	@./target
