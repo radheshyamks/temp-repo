@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(plusoperator)
-set(SOURCE plusoperator.cpp)
+project(operatoroverload)
+set(SOURCE Incrementoperator.cpp)
 message("this is plus operator overloading")
 add_executable(${PROJECT_NAME} ${SOURCE})
