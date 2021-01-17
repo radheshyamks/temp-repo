@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.12)
+project(fun_friend)
+message("this is friend function in cpp")
+set(SOURCE friendfun.cpp)
+add_executable(${PROJECT_NAME} ${SOURCE})

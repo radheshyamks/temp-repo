@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 3.12)
+project(reference VERSION 1.22)
+set(target reference01.cpp)
+#add_subdirectory()
+configure_file(reference.hh.in reference.hh)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${PROJECT_BINARY_DIR})
+add_executable(${PROJECT_NAME} ${target})

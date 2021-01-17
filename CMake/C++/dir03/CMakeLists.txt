@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.12)
+project(generic VERSION 1.01)
+configure_file(template.hh.in template.hh)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${PROJECT_BINARY_DIR})
+set(template template01.cpp)
+add_executable(${PROJECT_NAME} ${template})

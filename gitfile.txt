@@ -1,0 +1,33 @@
+git config --global core.editor "atom --wait"
+
+git config --global user.name "My Name"
+git config --global user.email "myemail@example.com"
+
+Add Color to Git Output
+
+You can configure your shell to add color to Git output with this command:
+
+git config --global color.ui true
+
+To see all your configuration settings, use the command git config --list.
+
+
+git help COMMAND
+git COMMAND --help
+man git-COMMAND
+
+
+to revert added file
+
+git reset .
+or
+git reset -p
+or
+git rm --cached <added_file_to_undo>
+git rm --cached .
+git rm -r --cached .
+
+for dry run
+git add -n .
+
+git restore --staged
