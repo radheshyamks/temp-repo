@@ -1,3 +1,8 @@
+/* -> there are three types of pointer
+ * 1. unique_ptr
+ * 2. share_ptr
+ * 3. weak_ptr
+ * */
 #include <iostream>
 class abc{
 	private:
