@@ -1,6 +1,6 @@
 CC= g++ -c
-OBJ= self.o
-SOURCE= self.cpp
+OBJ= unique_ptr.o
+SOURCE= unique_ptr.cpp
 all: target
 target: $(OBJ)
 	g++ -o $@ $^

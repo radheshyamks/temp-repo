@@ -1,1 +1,8 @@
 cmake_minimum_required(VERSION 3.12)
+project(thread LANGUAGES "C")
+set(SOURCE_CODE thread01.c)
+#option("LIB_LINK" "-lpthread")
+set(PROJECT "")
+#ADD_LIBRARY(SOURCE_FILE thread01.c)
+add_executable(${PROJECT_NAME} ${SOURCE_CODE})
+target_link_libraries(${PROJECT_NAME} -lpthread)
