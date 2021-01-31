@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.12)
+project(fibonacci LANGUAGES "C")
+set(SOURCE_FILE fibonacci01.c)
+add_executable(${PROJECT_NAME} ${SOURCE_FILE})
+target_link_libraries(${PROJECT_NAME} -std=c11 -Wall -Werror)
