@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 3.12)
+project(mutex LANGUAGES "C")
+set(SOURCE_FILE mutex01.c)
+add_executable(${PROJECT_NAME} ${SOURCE_FILE})
+target_link_libraries(${PROJECT_NAME} -lpthread)
