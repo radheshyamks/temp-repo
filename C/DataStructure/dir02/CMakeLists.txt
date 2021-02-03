@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.12)
+project(prime LANGUAGES "C")
+message("this is the prime source file")
+set(SOURCE_FILE prime.c)
+set(CFLAG "-lm -std=c11 -Wall -Werror")
+set(CMAKE_C_COMPILER "gcc")
+add_executable(${PROJECT_NAME} ${SOURCE_FILE})
+target_link_libraries(${PROJECT_NAME} ${CFLAG})
