@@ -1,0 +1,1000 @@
+How to start working with GTest and CMake
+Asked 9 years, 1 month ago
+Active 8 months ago
+Viewed 127k times
+
+134
+
+
+52
+I have recently been sold on using CMake for compiling my C++ projects, and would now like to start writing some unit tests for my code. I have decided to use the Google Test utility to help with this, but require some help in getting started.
+
+All day I have been reading various guides and examples include the Primer, an introduction at IBM and some questions on SO (here and here) as well as other sources I've lost track of. I realise there's plenty out there but somehow I am still having difficulties.
+
+I'm currently trying to implement the most basic test, to confirm I've compiled/installed gtest right and it's not working. The only source file (testgtest.cpp) is taken almost exactly from this previous answer:
+
+#include <iostream>
+
+#include "gtest/gtest.h"
+
+TEST(sample_test_case, sample_test)
+{
+    EXPECT_EQ(1, 1);
+}
+and my associated CMakeLists.txt is as follows:
+
+cmake_minimum_required(VERSION 2.6)
+project(basic_test)
+
+# Setup testing
+enable_testing()
+find_package(GTest REQUIRED)
+include_directories(${GTEST_INCLUDE_DIR})
+
+# Add test cpp file
+add_executable(runUnitTests
+    testgtest.cpp
+)
+
+# Link test executable against gtest & gtest_main
+target_link_libraries(runUnitTests ${GTEST_LIBRARY_DEBUG} ${GTEST_MAIN_LIBRARY_DEBUG})
+
+add_test(
+    NAME runUnitTests
+    COMMAND runUnitTests
+)
+Note that I have chosen to link against gtest_main instead of providing the main at the end of the cpp file as I believe this will allow me to scale testing up more easily to multiple files.
+
+When building the generated .sln file (in Visual C++ 2010 Express) I unfortunately get a long list of errors of the form
+
+2>msvcprtd.lib(MSVCP100D.dll) : error LNK2005: "public: virtual __thiscall std::basic_iostream<char,struct std::char_traits<char> >::~basic_iostream<char,struct std::char_traits<char> >(void)" (??1?$basic_iostream@DU?$char_traits@D@std@@@std@@UAE@XZ) already defined in gtestd.lib(gtest-all.obj)
+which I think means that I'm not successfully linking to the gtest libraries. I have made sure that when linking against the debug libraries, I have then tried to build in debug mode.
+
+EDIT
+
+Having done some more digging, I think my issue is something to do with the type of library I am building gtest into. When building gtest with CMake, if BUILD_SHARED_LIBS is un-checked, and I link my program against these .lib files I get the errors mentioned above. However, if BUILD_SHARED_LIBS is checked then I produce a set of .lib and .dll files. When now linking against these .lib files the program compiles, but when run complains that it can't find gtest.dll.
+
+What are the differences between a SHARED and a not SHARED library, and if I choose not shared, why doesn't it work? Is there an option in the CMakeLists.txt for my project that I am missing?
+
+unit-testing
+cmake
+googletest
+﻿
+Share
+Improve this question
+Follow
+edited Aug 20 '18 at 11:00
+
+Vadim Kotov
+6,87688 gold badges4444 silver badges5555 bronze badges
+asked Dec 14 '11 at 16:11
+
+Chris
+7,36444 gold badges3434 silver badges5454 bronze badges
+4
+You can avoid including GTest sources in your own by using ExternalProject_Add rather than add_subdirectory. See this answer for details. – Fraser Oct 19 '12 at 19:40
+Why do we have access to ${gtest_SOURCE_DIR} in the solution example above? How/where is that variable declared? – dmonopoly Jan 3 '13 at 14:46 
+Oh it's declared in gtest-1.6.0/CMakeLists.txt: "project(gtest CXX C)" which makes the variables gtest_SOURCE_DIR and gtest_BINARY_DIR available. – dmonopoly Jan 3 '13 at 14:59 
+1
+What does enable_testing() do? – updogliu Nov 28 '13 at 22:21 
+1
+@updogliu: It enables ctest and the 'test' (or 'RUN_TESTS') target. It plays together with the add_test() cmake command. – Ela782 Aug 16 '14 at 13:37
+show 1 more comment
+10 Answers
+
+82
+
+The solution involved putting the gtest source directory as a subdirectory of your project. I've included the working CMakeLists.txt below if it is helpful to anyone.
+
+cmake_minimum_required(VERSION 2.6)
+project(basic_test)
+
+################################
+# GTest
+################################
+ADD_SUBDIRECTORY (gtest-1.6.0)
+enable_testing()
+include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+
+################################
+# Unit Tests
+################################
+# Add test cpp file
+add_executable( runUnitTests testgtest.cpp )
+# Link test executable against gtest & gtest_main
+target_link_libraries(runUnitTests gtest gtest_main)
+add_test( runUnitTests runUnitTests )
+﻿
+Share
+Improve this answer
+Follow
+answered Jan 31 '14 at 11:29
+
+Chris
+7,36444 gold badges3434 silver badges5454 bronze badges
+3
+I'm not sure what the add_test() does, but it doesn't seem to result in the test binary running... Am I missing something? – weberc2 Mar 29 '15 at 18:46
+4
+Not to beat a dead horse but I thought this was worth mentioning again. Fraser's comment above makes a very important point: "You can avoid including GTest sources in your own by using ExternalProject_Add rather than add_subdirectory." See Fraser's answer and comments for details here: stackoverflow.com/a/9695234/1735836 – Patricia May 5 '15 at 15:40 
+1
+In my case, I also needed to add pthread to the linked libraries, changing the second last line to target_link_libraries(runUnitTests gtest gtest_main pthread) – panmari Oct 6 '15 at 9:34 
+3
+@weberc2 You have to run make test to run the tests, or run ctest from the build directory. Run ctest -V to see the google test output as well as the ctest output. – Patrick Jul 21 '16 at 20:15 
+add a comment
+
+42
+
+Here is a complete working example that I just tested. It downloads directly from the web, either a fixed tarball, or the latest subversion directory.
+
+cmake_minimum_required (VERSION 3.1)
+
+project (registerer)
+
+##################################
+# Download and install GoogleTest
+
+include(ExternalProject)
+ExternalProject_Add(gtest
+  URL https://googletest.googlecode.com/files/gtest-1.7.0.zip
+  # Comment above line, and uncomment line below to use subversion.
+  # SVN_REPOSITORY http://googletest.googlecode.com/svn/trunk/ 
+  # Uncomment line below to freeze a revision (here the one for 1.7.0)
+  # SVN_REVISION -r700
+
+  PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gtest
+  INSTALL_COMMAND ""
+)
+ExternalProject_Get_Property(gtest source_dir binary_dir)
+
+################
+# Define a test
+add_executable(registerer_test registerer_test.cc)
+
+######################################
+# Configure the test to use GoogleTest
+#
+# If used often, could be made a macro.
+
+add_dependencies(registerer_test gtest)
+include_directories(${source_dir}/include)
+target_link_libraries(registerer_test ${binary_dir}/libgtest.a)
+target_link_libraries(registerer_test ${binary_dir}/libgtest_main.a)
+
+##################################
+# Just make the test runnable with
+#   $ make test
+
+enable_testing()
+add_test(NAME    registerer_test 
+         COMMAND registerer_test)
+﻿
+Share
+Improve this answer
+Follow
+answered Nov 26 '14 at 23:25
+
+user1427799
+77966 silver badges55 bronze badges
+9
+I don't know why you got downvoted for this. Your solution prevents someone from having to check in Google Test onto version control. Kudos for your solution. – Sal Rahman Oct 3 '15 at 2:27
+4
+The URL you use is now broken. An up-to-date URL is https://github.com/google/googletest/archive/release-1.8.0.zip – oscfri Jun 26 '18 at 10:06 
+Great answer. Should be number 1. – Mr00Anderson Nov 14 '18 at 18:41
+1
+greate answer! also we can use GIT_REPOSITORY https://github.com/google/googletest.git GIT_TAG release-1.8.1 instead of URL – TingQian LI Aug 14 '19 at 2:52
+The URL to the gtest latest release is: https://github.com/google/googletest/archive/release-1.10.0.zip – vahancho Jul 2 '20 at 13:59 
+show 1 more comment
+
+18
+
+You can get the best of both worlds. It is possible to use ExternalProject to download the gtest source and then use add_subdirectory() to add it to your build. This has the following advantages:
+
+gtest is built as part of your main build, so it uses the same compiler flags, etc. and hence avoids problems like the ones described in the question.
+There's no need to add the gtest sources to your own source tree.
+Used in the normal way, ExternalProject won't do the download and unpacking at configure time (i.e. when CMake is run), but you can get it to do so with just a little bit of work. I've written a blog post on how to do this which also includes a generalised implementation which works for any external project which uses CMake as its build system, not just gtest. You can find them here:
+
+https://crascit.com/2015/07/25/cmake-gtest/
+https://github.com/Crascit/DownloadProject
+Update: This approach is now also part of the googletest documentation.
+
+﻿
+Share
+Improve this answer
+Follow
+edited May 30 '17 at 9:44
+answered Jul 25 '15 at 4:11
+
+Craig Scott
+6,90533 gold badges4444 silver badges7171 bronze badges
+3
+IMO, this is perhaps the cleanest way to implement Google test with a CMake project. I wish the moderators would pay more attention to content and quality of the answers. – NameRakes Jan 11 '17 at 5:47
+The linked DownloadProject.cmake generalised module is great. It feels like the basis for cmake having a package management system where all I need are a list of links to CMake compatible github urls. – Josh Peak Feb 21 '17 at 0:33
+add a comment
+
+13
+
+Most likely, the difference in compiler options between your test binary and the Google Test library is to blame on such errors. That's why it's recommended to bring in Google Test in the source form and build it along with your tests. It's very easy to do in CMake. You just invoke ADD_SUBDIRECTORY with the path to the gtest root and then you can use public library targets (gtest and gtest_main) defined there. There is more background information in this CMake thread in the googletestframework group.
+
+[edit] The BUILD_SHARED_LIBS option is only effective on Windows for now. It specifies the type of libraries that you want CMake to build. If you set it to ON, CMake will build them as DLLs as opposed to static libs. In that case you have to build your tests with -DGTEST_LINKED_AS_SHARED_LIBRARY=1 and copy the DLL files produced by the CMake to the directory with your test binary (CMake places them in a separate output directory by default). Unless gtest in static lib doesn't work for you, it's easier not to set that option.
+
+﻿
+Share
+Improve this answer
+Follow
+edited Dec 16 '11 at 16:42
+answered Dec 15 '11 at 16:04
+
+VladLosev
+6,24711 gold badge2727 silver badges4242 bronze badges
+1
+Great thanks, didn't realise you could build completely seperate projects within the same CMakeLists like that. I can now safely say that EXPECT_EQ(1.0 == 1.0) passes and EXPECT_EQ(0.0 == 1.0) fails. Now time for more real tests... – Chris Dec 16 '11 at 10:18
+add a comment
+
+3
+
+The OP is using Windows, and a much easier way to use GTest today is with vcpkg+cmake.
+
+Install vcpkg as per https://github.com/microsoft/vcpkg , and make sure you can run vcpkg from the cmd line. Take note of the vcpkg installation folder, eg. C:\bin\programs\vcpkg.
+
+Install gtest using vcpkg install gtest: this will download, compile, and install GTest.
+
+Use a CmakeLists.txt as below: note we can use targets instead of including folders.
+
+cmake_minimum_required(VERSION 3.15)
+project(sample CXX)
+enable_testing()
+find_package(GTest REQUIRED)
+add_executable(test1 test.cpp source.cpp)
+target_link_libraries(test1 GTest::GTest GTest::Main)
+add_test(test-1 test1)
+Run cmake with: (edit the vcpkg folder if necessary, and make sure the path to the vcpkg.cmake toolchain file is correct)
+
+cmake -B build -DCMAKE_TOOLCHAIN_FILE=C:\bin\programs\vcpkg\scripts\buildsystems\vcpkg.cmake
+
+and build using cmake --build build as usual. Note that, vcpkg will also copy the required gtest(d).dll/gtest(d)_main.dll from the install folder to the Debug/Release folders.
+
+Test with cd build & ctest.
+
+﻿
+Share
+Improve this answer
+Follow
+answered May 30 '20 at 20:51
+
+Daniele
+2,40211 gold badge1111 silver badges1717 bronze badges
+add a comment
+
+2
+
+Having done some more digging, I think my issue is something to do with the type of library I am building gtest into. When building gtest with CMake, if BUILD_SHARED_LIBS is un-checked, and I link my program against these .lib files I get the errors mentioned above. However, if BUILD_SHARED_LIBS is checked then I produce a set of .lib and .dll files. When now linking against these .lib files the program compiles, but when run complains that it can't find gtest.dll.
+
+That is because you have to add -DGTEST_LINKED_AS_SHARED_LIBRARY=1 to compiler definitions in your project if you want to use gtest as a shared library.
+
+You could also use the static libraries, provided you compiled it with gtest_force_shared_crt option on to eliminate errors you have seen.
+
+I like the library but adding it to the project is a real pain. And you have no chance to do it right unless you dig (and hack) into the gtest cmake files. Shame. In particular I do not like the idea of adding gtest as a source. :)
+
+﻿
+Share
+Improve this answer
+Follow
+answered Oct 19 '12 at 11:28
+
+Slava
+1,4231515 silver badges1919 bronze badges
+add a comment
+
+0
+
+Yours and VladLosevs' solutions are probably better than mine. If you want a brute-force solution, however, try this:
+
+SET(CMAKE_EXE_LINKER_FLAGS /NODEFAULTLIB:\"msvcprtd.lib;MSVCRTD.lib\")
+
+FOREACH(flag_var
+    CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+    CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+    if(${flag_var} MATCHES "/MD")
+        string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+    endif(${flag_var} MATCHES "/MD")
+ENDFOREACH(flag_var)
+﻿
+Share
+Improve this answer
+Follow
+answered Feb 26 '12 at 21:32
+
+Torleif
+2,23433 gold badges2626 silver badges2828 bronze badges
+add a comment
+
+0
+
+The simplest CMakeLists.txt I distilled from answers in this thread and some trial and error is:
+
+project(test CXX C)
+cmake_minimum_required(VERSION 2.6.2)
+
+#include folder contains current project's header filed
+include_directories("include")
+
+#test folder contains test files
+set (PROJECT_SOURCE_DIR test) 
+add_executable(hex2base64 ${PROJECT_SOURCE_DIR}/hex2base64.cpp)
+
+# Link test executable against gtest nothing else required
+target_link_libraries(hex2base64 gtest pthread)
+Gtest should already be installed on your system.
+
+﻿
+Share
+Improve this answer
+Follow
+edited Jan 24 '16 at 19:36
+answered Jan 24 '16 at 19:26
+
+AlexBriskin
+4233 bronze badges
+It's really not a good practice to add library like this in CMake. One of the main objective of cmake is to never have to make assumption like "This libs should already be installed...". CMake check that library is here, and if not, an error is thrown. – Adrien BARRAL Nov 17 '16 at 15:44
+add a comment
+
+0
+
+Just as an update to @Patricia's comment in the accepted answer and @Fraser's comment for the original question, if you have access to CMake 3.11+ you can make use of CMake's FetchContent function.
+
+CMake's FetchContent page uses googletest as an example!
+
+I've provided a small modification of the accepted answer:
+
+cmake_minimum_required(VERSION 3.11)
+project(basic_test)
+
+set(GTEST_VERSION 1.6.0 CACHE STRING "Google test version")
+
+################################
+# GTest
+################################
+FetchContent_Declare(googletest
+GIT_REPOSITORY https://github.com/google/googletest.git
+GIT_TAG release-${GTEST_VERSION})
+
+FetchContent_GetProperties(googletest)
+if(NOT googletest_POPULATED)
+  FetchContent_Populate(googletest)
+  add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
+endif()
+
+enable_testing()
+
+################################
+# Unit Tests
+################################
+# Add test cpp file
+add_executable(runUnitTests testgtest.cpp)
+
+# Include directories
+target_include_directories(runUnitTests 
+                      $<TARGET_PROPERTY:gtest,INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>
+                      $<TARGET_PROPERTY:gtest_main,INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>)
+
+# Link test executable against gtest & gtest_main
+target_link_libraries(runUnitTests gtest
+                                   gtest_main)
+
+add_test(runUnitTests runUnitTests)
+You can use the INTERFACE_SYSTEM_INCLUDE_DIRECTORIES target property of the gtest and gtest_main targets as they are set in the google test CMakeLists.txt script.
+
+﻿
+Share
+Improve this answer
+Follow
+answered Oct 15 '19 at 10:49
+
+Mr. Splat
+111 silver badge11 bronze badge
+In CMake >= v3.14 you can forego the explicit target_include_directories and use FetchContent_MakeAvailable(googletest) instead. This will both populate the content and add it to the main build. CMake FetchContent - more info – 67hz Feb 19 '20 at 19:52 
+add a comment
+
+0
+
+I decided to throw something generic together real quick demonstrating a different way of doing it than the answers previously posted, in hope that it might help someone. The following worked for me on my mac. Firstly I ran setup commands for gtests. I just used a script I found to setup everything.
+
+#!/usr/bin/env bash
+
+# install gtests script on mac
+# https://gist.github.com/butuzov/e7df782c31171f9563057871d0ae444a
+
+#usage
+# chmod +x ./gtest_installer.sh
+# sudo ./gtest_installer.sh
+
+# Current directory
+__THIS_DIR=$(pwd)
+
+
+# Downloads the 1.8.0 to disc
+function dl {
+    printf "\n  Downloading Google Test Archive\n\n"
+    curl -LO https://github.com/google/googletest/archive/release-1.8.0.tar.gz
+    tar xf release-1.8.0.tar.gz
+}
+
+# Unpack and Build
+function build {
+    printf "\n  Building GTest and Gmock\n\n"
+    cd googletest-release-1.8.0
+    mkdir build 
+    cd $_
+    cmake -Dgtest_build_samples=OFF -Dgtest_build_tests=OFF ../
+    make
+}
+
+# Install header files and library
+function install {
+    printf "\n  Installing GTest and Gmock\n\n"
+
+    USR_LOCAL_INC="/usr/local/include"
+    GTEST_DIR="/usr/local/Cellar/gtest/"
+    GMOCK_DIR="/usr/local/Cellar/gmock/"
+
+    mkdir $GTEST_DIR
+
+    cp googlemock/gtest/*.a $GTEST_DIR
+    cp -r ../googletest/include/gtest/  $GTEST_DIR
+    ln -snf $GTEST_DIR $USR_LOCAL_INC/gtest
+    ln -snf $USR_LOCAL_INC/gtest/libgtest.a /usr/local/lib/libgtest.a
+    ln -snf $USR_LOCAL_INC/gtest/libgtest_main.a /usr/local/lib/libgtest_main.a
+
+    mkdir $GMOCK_DIR
+    cp googlemock/*.a   $GMOCK_DIR
+    cp -r ../googlemock/include/gmock/  $GMOCK_DIR
+    ln -snf $GMOCK_DIR $USR_LOCAL_INC/gmock
+    ln -snf $USR_LOCAL_INC/gmock/libgmock.a /usr/local/lib/libgmock.a
+    ln -snf $USR_LOCAL_INC/gmock/libgmock_main.a /usr/local/lib/libgmock_main.a
+}
+
+# Final Clean up.
+function cleanup {
+    printf "\n  Running Cleanup\n\n"
+
+    cd $__THIS_DIR
+    rm -rf $(pwd)/googletest-release-1.8.0
+    unlink $(pwd)/release-1.8.0.tar.gz
+}
+
+dl && build && install && cleanup 
+Next, I made a simple folder structure and wrote some quick classes
+
+utils/
+  cStringUtils.cpp
+  cStringUtils.h
+  CMakeLists.txt
+utils/tests/
+    gtestsMain.cpp
+    cStringUtilsTest.cpp
+    CMakeLists.txt
+I made a top level CMakeLists.txt for the utils folder, and a CMakeLists.txt for the tests folder
+
+cmake_minimum_required(VERSION 2.6)
+
+project(${GTEST_PROJECT} C CXX)
+
+set(CMAKE_C_STANDARD 98)
+set(CMAKE_CXX_STANDARD 98)
+
+#include .h and .cpp files in util folder
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+
+##########
+# GTests
+#########
+add_subdirectory(tests)
+This is the CMakeLists.txt in the tests folder
+
+cmake_minimum_required(VERSION 2.6)
+
+set(GTEST_PROJECT gtestProject)
+
+enable_testing()
+
+message("Gtest Cmake")
+
+find_package(GTest REQUIRED)
+
+# The utils, test, and gtests directories
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+include_directories("/usr/local/Cellar/gtest/include")
+include_directories("/usr/local/Cellar/gtest/lib")
+
+set(SOURCES
+  gtestsMain.cpp
+  ../cStringUtils.cpp
+  cStringUtilsTest.cpp
+)
+
+set(HEADERS
+  ../cStringUtils.h
+)
+
+add_executable(${GTEST_PROJECT} ${SOURCES})
+target_link_libraries(${GTEST_PROJECT} PUBLIC
+  gtest
+  gtest_main
+)
+
+add_test(${GTEST_PROJECT} ${GTEST_PROJECT})
+Then all that's left is to write a sample gtest and gtest main
+
+sample gtest
+
+#include "gtest/gtest.h"
+#include "cStringUtils.h"
+
+namespace utils
+{
+
+class cStringUtilsTest : public ::testing::Test {
+
+ public:
+
+  cStringUtilsTest() : m_function_param(10) {}
+  ~cStringUtilsTest(){}
+
+ protected:
+  virtual void SetUp() 
+  {
+    // declare pointer 
+    pFooObject = new StringUtilsC();    
+  }
+
+  virtual void TearDown() 
+  {
+    // Code here will be called immediately after each test
+    // (right before the destructor).
+    if (pFooObject != NULL)
+    {
+      delete pFooObject;
+      pFooObject = NULL;
+    }
+  }
+
+
+  StringUtilsC fooObject;              // declare object
+  StringUtilsC *pFooObject;
+  int m_function_param;                // this value is used to test constructor
+};
+
+TEST_F(cStringUtilsTest, testConstructors){
+    EXPECT_TRUE(1);
+
+  StringUtilsC fooObject2 = fooObject; // use copy constructor
+
+
+  fooObject.fooFunction(m_function_param);
+  pFooObject->fooFunction(m_function_param);
+  fooObject2.fooFunction(m_function_param);
+}
+
+} // utils end
+sample gtest main
+
+#include "gtest/gtest.h"
+#include "cStringUtils.h"
+
+int main(int argc, char **argv) {
+  ::testing::InitGoogleTest(&argc, argv); 
+  return RUN_ALL_TESTS();
+}
+I can then compile and run gtests with the following commands from the utils folder
+
+cmake .
+make 
+./tests/gtestProject
+
+
+
+
+
+
+
+
+
+
+
+
+#include <iostream>
+
+#include "gtest/gtest.h"
+
+TEST(sample_test_case, sample_test)
+{
+    EXPECT_EQ(1, 1);
+}
+and my associated CMakeLists.txt is as follows:
+
+cmake_minimum_required(VERSION 2.6)
+project(basic_test)
+
+# Setup testing
+enable_testing()
+find_package(GTest REQUIRED)
+include_directories(${GTEST_INCLUDE_DIR})
+
+# Add test cpp file
+add_executable(runUnitTests
+    testgtest.cpp
+)
+
+# Link test executable against gtest & gtest_main
+target_link_libraries(runUnitTests ${GTEST_LIBRARY_DEBUG} ${GTEST_MAIN_LIBRARY_DEBUG})
+
+add_test(
+    NAME runUnitTests
+    COMMAND runUnitTests
+)
+
+
+
+
+cmake_minimum_required(VERSION 2.6)
+project(basic_test)
+
+################################
+# GTest
+################################
+ADD_SUBDIRECTORY (gtest-1.6.0)
+enable_testing()
+include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+
+################################
+# Unit Tests
+################################
+# Add test cpp file
+add_executable( runUnitTests testgtest.cpp )
+# Link test executable against gtest & gtest_main
+target_link_libraries(runUnitTests gtest gtest_main)
+add_test( runUnitTests runUnitTests )
+﻿
+Share
+Improve this answer
+Follow
+
+cmake_minimum_required (VERSION 3.1)
+
+project (registerer)
+
+##################################
+# Download and install GoogleTest
+
+include(ExternalProject)
+ExternalProject_Add(gtest
+  URL https://googletest.googlecode.com/files/gtest-1.7.0.zip
+  # Comment above line, and uncomment line below to use subversion.
+  # SVN_REPOSITORY http://googletest.googlecode.com/svn/trunk/ 
+  # Uncomment line below to freeze a revision (here the one for 1.7.0)
+  # SVN_REVISION -r700
+
+  PREFIX ${CMAKE_CURRENT_BINARY_DIR}/gtest
+  INSTALL_COMMAND ""
+)
+ExternalProject_Get_Property(gtest source_dir binary_dir)
+
+################
+# Define a test
+add_executable(registerer_test registerer_test.cc)
+
+######################################
+# Configure the test to use GoogleTest
+#
+# If used often, could be made a macro.
+
+add_dependencies(registerer_test gtest)
+include_directories(${source_dir}/include)
+target_link_libraries(registerer_test ${binary_dir}/libgtest.a)
+target_link_libraries(registerer_test ${binary_dir}/libgtest_main.a)
+
+##################################
+# Just make the test runnable with
+#   $ make test
+
+enable_testing()
+add_test(NAME    registerer_test 
+         COMMAND registerer_test)
+﻿
+Share
+Improve this answer
+Follow
+
+
+
+
+
+
+
+
+
+The OP is using Windows, and a much easier way to use GTest today is with vcpkg+cmake.
+
+Install vcpkg as per https://github.com/microsoft/vcpkg , and make sure you can run vcpkg from the cmd line. Take note of the vcpkg installation folder, eg. C:\bin\programs\vcpkg.
+
+Install gtest using vcpkg install gtest: this will download, compile, and install GTest.
+
+Use a CmakeLists.txt as below: note we can use targets instead of including folders.
+
+cmake_minimum_required(VERSION 3.15)
+project(sample CXX)
+enable_testing()
+find_package(GTest REQUIRED)
+add_executable(test1 test.cpp source.cpp)
+target_link_libraries(test1 GTest::GTest GTest::Main)
+add_test(test-1 test1)
+
+
+
+
+
+
+SET(CMAKE_EXE_LINKER_FLAGS /NODEFAULTLIB:\"msvcprtd.lib;MSVCRTD.lib\")
+
+FOREACH(flag_var
+    CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+    CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+    if(${flag_var} MATCHES "/MD")
+        string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+    endif(${flag_var} MATCHES "/MD")
+ENDFOREACH(flag_var)
+
+
+
+
+
+
+project(test CXX C)
+cmake_minimum_required(VERSION 2.6.2)
+
+#include folder contains current project's header filed
+include_directories("include")
+
+#test folder contains test files
+set (PROJECT_SOURCE_DIR test) 
+add_executable(hex2base64 ${PROJECT_SOURCE_DIR}/hex2base64.cpp)
+
+# Link test executable against gtest nothing else required
+target_link_libraries(hex2base64 gtest pthread)
+
+
+
+
+
+
+
+
+
+
+
+cmake_minimum_required(VERSION 3.11)
+project(basic_test)
+
+set(GTEST_VERSION 1.6.0 CACHE STRING "Google test version")
+
+################################
+# GTest
+################################
+FetchContent_Declare(googletest
+GIT_REPOSITORY https://github.com/google/googletest.git
+GIT_TAG release-${GTEST_VERSION})
+
+FetchContent_GetProperties(googletest)
+if(NOT googletest_POPULATED)
+  FetchContent_Populate(googletest)
+  add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR})
+endif()
+
+enable_testing()
+
+################################
+# Unit Tests
+################################
+# Add test cpp file
+add_executable(runUnitTests testgtest.cpp)
+
+# Include directories
+target_include_directories(runUnitTests 
+                      $<TARGET_PROPERTY:gtest,INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>
+                      $<TARGET_PROPERTY:gtest_main,INTERFACE_SYSTEM_INCLUDE_DIRECTORIES>)
+
+# Link test executable against gtest & gtest_main
+target_link_libraries(runUnitTests gtest
+                                   gtest_main)
+
+add_test(runUnitTests runUnitTests)
+You can use the INTERFACE_SYSTEM_INCLUDE_DIRECTORIES target property of the gtest and gtest_main targets as they are set in the google test CMakeLists.txt script.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#!/usr/bin/env bash
+
+# install gtests script on mac
+# https://gist.github.com/butuzov/e7df782c31171f9563057871d0ae444a
+
+#usage
+# chmod +x ./gtest_installer.sh
+# sudo ./gtest_installer.sh
+
+# Current directory
+__THIS_DIR=$(pwd)
+
+
+# Downloads the 1.8.0 to disc
+function dl {
+    printf "\n  Downloading Google Test Archive\n\n"
+    curl -LO https://github.com/google/googletest/archive/release-1.8.0.tar.gz
+    tar xf release-1.8.0.tar.gz
+}
+
+# Unpack and Build
+function build {
+    printf "\n  Building GTest and Gmock\n\n"
+    cd googletest-release-1.8.0
+    mkdir build 
+    cd $_
+    cmake -Dgtest_build_samples=OFF -Dgtest_build_tests=OFF ../
+    make
+}
+
+# Install header files and library
+function install {
+    printf "\n  Installing GTest and Gmock\n\n"
+
+    USR_LOCAL_INC="/usr/local/include"
+    GTEST_DIR="/usr/local/Cellar/gtest/"
+    GMOCK_DIR="/usr/local/Cellar/gmock/"
+
+    mkdir $GTEST_DIR
+
+    cp googlemock/gtest/*.a $GTEST_DIR
+    cp -r ../googletest/include/gtest/  $GTEST_DIR
+    ln -snf $GTEST_DIR $USR_LOCAL_INC/gtest
+    ln -snf $USR_LOCAL_INC/gtest/libgtest.a /usr/local/lib/libgtest.a
+    ln -snf $USR_LOCAL_INC/gtest/libgtest_main.a /usr/local/lib/libgtest_main.a
+
+    mkdir $GMOCK_DIR
+    cp googlemock/*.a   $GMOCK_DIR
+    cp -r ../googlemock/include/gmock/  $GMOCK_DIR
+    ln -snf $GMOCK_DIR $USR_LOCAL_INC/gmock
+    ln -snf $USR_LOCAL_INC/gmock/libgmock.a /usr/local/lib/libgmock.a
+    ln -snf $USR_LOCAL_INC/gmock/libgmock_main.a /usr/local/lib/libgmock_main.a
+}
+
+# Final Clean up.
+function cleanup {
+    printf "\n  Running Cleanup\n\n"
+
+    cd $__THIS_DIR
+    rm -rf $(pwd)/googletest-release-1.8.0
+    unlink $(pwd)/release-1.8.0.tar.gz
+}
+
+dl && build && install && cleanup 
+Next, I made a simple folder structure and wrote some quick classes
+
+utils/
+  cStringUtils.cpp
+  cStringUtils.h
+  CMakeLists.txt
+utils/tests/
+    gtestsMain.cpp
+    cStringUtilsTest.cpp
+    CMakeLists.txt
+I made a top level CMakeLists.txt for the utils folder, and a CMakeLists.txt for the tests folder
+
+cmake_minimum_required(VERSION 2.6)
+
+project(${GTEST_PROJECT} C CXX)
+
+
+
+
+
+
+
+
+
+
+
+
+
+#!/usr/bin/env bash
+
+# install gtests script on mac
+# https://gist.github.com/butuzov/e7df782c31171f9563057871d0ae444a
+
+#usage
+# chmod +x ./gtest_installer.sh
+# sudo ./gtest_installer.sh
+
+# Current directory
+__THIS_DIR=$(pwd)
+
+
+# Downloads the 1.8.0 to disc
+function dl {
+    printf "\n  Downloading Google Test Archive\n\n"
+    curl -LO https://github.com/google/googletest/archive/release-1.8.0.tar.gz
+    tar xf release-1.8.0.tar.gz
+}
+
+# Unpack and Build
+function build {
+    printf "\n  Building GTest and Gmock\n\n"
+    cd googletest-release-1.8.0
+    mkdir build 
+    cd $_
+    cmake -Dgtest_build_samples=OFF -Dgtest_build_tests=OFF ../
+    make
+}
+
+# Install header files and library
+function install {
+    printf "\n  Installing GTest and Gmock\n\n"
+
+    USR_LOCAL_INC="/usr/local/include"
+    GTEST_DIR="/usr/local/Cellar/gtest/"
+    GMOCK_DIR="/usr/local/Cellar/gmock/"
+
+    mkdir $GTEST_DIR
+
+    cp googlemock/gtest/*.a $GTEST_DIR
+    cp -r ../googletest/include/gtest/  $GTEST_DIR
+    ln -snf $GTEST_DIR $USR_LOCAL_INC/gtest
+    ln -snf $USR_LOCAL_INC/gtest/libgtest.a /usr/local/lib/libgtest.a
+    ln -snf $USR_LOCAL_INC/gtest/libgtest_main.a /usr/local/lib/libgtest_main.a
+
+    mkdir $GMOCK_DIR
+    cp googlemock/*.a   $GMOCK_DIR
+    cp -r ../googlemock/include/gmock/  $GMOCK_DIR
+    ln -snf $GMOCK_DIR $USR_LOCAL_INC/gmock
+    ln -snf $USR_LOCAL_INC/gmock/libgmock.a /usr/local/lib/libgmock.a
+    ln -snf $USR_LOCAL_INC/gmock/libgmock_main.a /usr/local/lib/libgmock_main.a
+}
+
+# Final Clean up.
+function cleanup {
+    printf "\n  Running Cleanup\n\n"
+
+    cd $__THIS_DIR
+    rm -rf $(pwd)/googletest-release-1.8.0
+    unlink $(pwd)/release-1.8.0.tar.gz
+}
+
+dl && build && install && cleanup 
+Next, I made a simple folder structure and wrote some quick classes
+
+utils/
+  cStringUtils.cpp
+  cStringUtils.h
+  CMakeLists.txt
+utils/tests/
+    gtestsMain.cpp
+    cStringUtilsTest.cpp
+    CMakeLists.txt
+I made a top level CMakeLists.txt for the utils folder, and a CMakeLists.txt for the tests folder
+
+cmake_minimum_required(VERSION 2.6)
+
+project(${GTEST_PROJECT} C CXX)
+
+
+
