@@ -6,3 +6,7 @@ set(CFLAG "-lm -std=c11 -Wall -Werror")
 set(CMAKE_C_COMPILER "gcc")
 add_executable(${PROJECT_NAME} ${SOURCE_FILE})
 target_link_libraries(${PROJECT_NAME} ${CFLAG})
+
+if("TRUE")
+	message("this is true but without any condition")
+endif()
