@@ -1,0 +1,16 @@
+Conditional syntax
+order of execution:
+execution of paranthesis will be very high
+first:
+EXISTS, COMMAND, DEFINED
+
+then
+
+EQUAL, LESS_EQUAL, GREATER, GREATER_EQAUL, STREQAUL, STRLESS, STRLESS_EQUAL, STRGREATER, STRGREATER_EQUAL, VERSION_EQUAL, VERSION_LESS, VERSION_LESS_EQUAL, VERSION_GREATER, VERSION_GREATER_EQUAL, VERSION_EQUAL and MATCHES
+
+at last
+boolean operators:
+
+NOT, AND and OR
+
+
