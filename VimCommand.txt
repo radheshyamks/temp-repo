@@ -1,0 +1,87 @@
+Normal Mode
+cut a line					-> dd
+Cut numbers of line				-> Ndd
+delete line from the cursor			-> D or ND
+paste a cut line				-> p, P or Np or NP
+cut a character					-> x
+cut with insert mode				-> s
+delete entire line with inset mode		-> S
+jump one word or many				-> w, Nw, e, Ne, b, ge, W, B
+jump line number to any line			-> NG
+jump below line					-> Nj
+jump to above line				-> Nk
+Jump bottom of the file				-> G
+Jump first line of the file			-> gg
+Jump at highest part of page			-> H
+Jump at lowest part of page			-> L
+Jump at middle part of page			-> M
+See the percentage and line number of file	-> Ctrl+g
+Goto previous cursor position			-> Ctrl+o or Ctrl+i
+Goto number percent of file			-> N% (Like -> 10% or 50% or 100%)
+replace a charaacter				-> press r and change it
+Change the case of character			-> ~
+Goto last character of a line			-> $
+Goto first character of a line			-> 0
+Copy a word					-> yw
+Copy N words					-> yNw or yNe or y$
+Copy a line					-> yy or Y
+copy numbers of line				-> Nyy
+Set the relative number				-> set relativenumber rnu
+Unset relative number				-> set norelativenumber or nornu
+undo						-> u or U
+redu changes					-> Ctrl+r
+Search case case sensitive			-> /\csearch_word (c for case)
+Search specific word				-> /\<Search_word\>
+See command history				-> q: or q/ or q?
+search and replace a specific word		-> :#,#s/\<search_word\>/replace_word/gic
+One page down					-> Ctrl+f or NCtrl+f
+once page up					-> Ctrl+b or Nctrl+b
+half page down					-> Ctrl+d
+half page up					-> Ctrl+u
+set scroll offset				-> :set scrolloff=N
+check scroll off				-> :set scrolloff
+Set scroll off middle of screen			-> :set scrolloff=999
+UnSet scroll off				-> :set scrolloff=0
+delete the word whereever cursor with insert	-> ciw
+Align the text					-> set paste
+See the file					-> view filename or vie filename or edit filename or e filename or r filename
+Sort						-> #,#sort
+reverse sort					-> #,#sort!
+Sort whole file					-> %sort
+reverse sort whole file				-> %sort
+set the $ sign at end				-> set list
+Unset the list					-> set unlist
+Goto last change line number			-> g; and g, or 2g; or 2g,
+See the whole changes				-> :changes
+Jumps						-> :jumps
+delete from anywhere in a line			-> d and goto search mode and type the word and enter
+
+
+Last Line Mode:
+Open the whole files and folder in PWD	-> Ve
+check the vim version			-> version or ve
+Open vimtutor				-> vimtutor
+For any help				-> help
+Set line number				-> set number or set nu
+Unset line number			-> set nonu or set nonumber
+
+
+
+Inset Mode
+
+
+
+
+
+this is rough line
+this is rough line
+this is rough line
+this is rough line
+this is rough line
+
+
+
+this is roughline
+this is roughline
+this is rough line
+this is rough line
