@@ -1,0 +1,47 @@
+//Disabling a test case
+TEST(Sample, DISABLE_Test1)
+{
+	//DISABLE will disable this test case
+}
+TEST(Sample, Test2){}
+TEST(Sample, Test3){}
+TEST(Sample, Test4){}
+TEST(Sample1, Test1){}
+TEST(Sample1, Test2){}
+TEST(Sample1, Test3){}
+TEST(Sample2, Test1){}
+TEST(Sample2, Test2){}
+TEST(Sample2, Test3){}
+
+//controlling through command line arguments
+
+//It will not execute the test case start with Sampl1
+g++ testfilename.cpp link_lib --gtest_filter=Sample1.*
+
+
+//it will not execute the test cases start with sample1 and sample2
+g++ testfilename.cpp link_lib --gtest_filter=Sample1.*: Sample2.*
+
+
+//It will run all the test cases except Sample2.Test2
+g++ testfilename.cpp link_lib --gtest_filter=Sample1.*: Sample2.*-Sample2.Test2
+
+
+//it will list all test cases
+g++ testfilename.cpp link_lib --gtest_list_tests
+
+//it will repeat the test cases 20 times
+g++ testfilename.cpp link_lib --gtest_repeat=20
+
+
+//It will repeat all Sample1 suit test cases 20 times
+g++ testfilename.cpp link_lib --gtest_repeat=20 --gtest_filter=Sample1.*
+
+
+// To suffle the test cases
+g++ testfilename.cpp link_lib --gtest_suffle
+
+
+//Running disabled test cases
+g++ testfilename.cpp link_lib --gtest_also_run_disabled_tests
+
