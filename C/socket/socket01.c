@@ -1,4 +1,13 @@
-/*this is a client and server listen program*/
+/*this is a client and server listen program
+ * to run the exe file
+ * ./a.out portnumber
+ *
+ * in another terminal start
+ * you can check the status of port by using
+ * netstat -atn
+ * telnet localhost portnumber
+ * this program is just a echo server
+ * */
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/socket.h>
