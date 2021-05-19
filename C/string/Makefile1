@@ -1,0 +1,15 @@
+CC= gcc -c -Wall -Werror
+OBJ= strcat.o
+SOURCE= strcat.c
+VALGRIND= valgrind --log-file=valgrind.txt --tool=memcheck --leak-check=yes --show-leak-kinds=all
+all: target
+target: $(OBJ)
+	gcc $(OBJ) -o $@
+$(OBJ): $(SOURCE)
+	$(CC) $^
+.PHONY: run clean
+run:
+	@$(VALGRIND) ./target
+clean:
+	@echo "cleaning all generated files..."
+	@rm -rf *.o target *.txt

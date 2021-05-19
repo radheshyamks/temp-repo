@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 project(thread LANGUAGES "C")
+message("this cmake is for threading")
 set(SOURCE_FILE thread03.c)
 add_executable(${PROJECT_NAME} ${SOURCE_FILE})
 message(STATUS "this is ${PROJECT_NAME} project")

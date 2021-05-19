@@ -1,7 +1,6 @@
-# go to build directory and give the below command
-# cmake -S ../ -B ./
 cmake_minimum_required(VERSION 3.12)
-project(thread LANGUAGES "C")
-set(SOURCE_FILE thread02.c)
+project(thread LANGUAGES "C" "CXX")
+message("-------------this cmake is for threading-------------")
+set(SOURCE_FILE thread06.c)
 add_executable(${PROJECT_NAME} ${SOURCE_FILE})
 target_link_libraries(${PROJECT_NAME} -lpthread)

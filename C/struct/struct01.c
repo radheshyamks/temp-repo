@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 int Int(int, int);
 void Char(char, char);
 float Float(float, double);
@@ -15,6 +16,9 @@ int main(int argc, char* argv[], char** env)
 	s.cptr('A', 'B');
 	float f = s.fptr(20.45f, 50.56);
 	printf("%d %f\n", i, f);
+	printf("offsetof iptr = %lu\n", offsetof(F, iptr));
+	printf("offsetof cptr = %lu\n", offsetof(F, cptr));
+	printf("offsetof fptr = %lu\n", offsetof(F, fptr));
 	return 0;
 }
 int Int(int i, int j){
