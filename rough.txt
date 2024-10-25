@@ -15,7 +15,7 @@ git config --global /* for a project */
 git config --local /* for specific project */
 
 /* you can set your user name and email id */
-
+// set user name for global
 git config --global user.name "your name"
 
 git config --global user.email "your email"
